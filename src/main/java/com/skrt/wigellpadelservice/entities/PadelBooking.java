@@ -12,7 +12,7 @@ import java.util.UUID;
 @Table(
     name = "padel_bookings",
     indexes = {
-        @Index(name = "idx_booking_court_date_time", columnList = "court_id, date, time"),
+        @Index(name = "idx_booking_court_date_time", columnList = "court_id,date,time"),
         @Index(name = "idx_booking_date", columnList = "date")
     }
 )
@@ -47,6 +47,7 @@ public class PadelBooking {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
     private LocalDateTime canceledAt;
 
     public PadelBooking() {
@@ -112,10 +113,10 @@ public class PadelBooking {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-    public LocalDateTime getCancelledAt() {
+    public LocalDateTime getCanceledAt() {
         return canceledAt;
     }
-    public void setCancelledAt(LocalDateTime cancelledAt) {
-        this.canceledAt = cancelledAt;
+    public void setCanceledAt(LocalDateTime canceledAt) {
+        this.canceledAt = canceledAt;
     }
 }

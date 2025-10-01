@@ -1,9 +1,9 @@
 package com.skrt.wigellpadelservice.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -15,12 +15,16 @@ public class PadelCourt {
     private UUID id;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String name;
 
-    @Min(1)
     @Column(nullable = false)
     private int maxPlayers;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    private LocalDateTime deactivatedAt;
 
     public PadelCourt() {
     }
@@ -42,5 +46,17 @@ public class PadelCourt {
     }
     public void setMaxPlayers(int maxPlayers) {
         this.maxPlayers = maxPlayers;
+    }
+    public boolean isActive() {
+        return active;
+    }
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+    public LocalDateTime getDeactivatedAt() {
+        return deactivatedAt;
+    }
+    public void setDeactivatedAt(LocalDateTime deactivatedAt) {
+        this.deactivatedAt = deactivatedAt;
     }
 }
