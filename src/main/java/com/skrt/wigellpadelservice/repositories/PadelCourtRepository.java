@@ -17,4 +17,7 @@ public interface PadelCourtRepository extends JpaRepository<PadelCourt, UUID> {
 
     List<PadelCourt> findAllByOrderByNameAsc();
 
+    List<PadelCourt> findByActiveTrueOrderByNameAsc();
+
+    Optional<PadelCourt> findByIdAndActiveTrue(UUID id);
 }
