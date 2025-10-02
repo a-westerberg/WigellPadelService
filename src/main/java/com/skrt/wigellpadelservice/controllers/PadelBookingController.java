@@ -5,8 +5,9 @@ import com.skrt.wigellpadelservice.entities.PadelBooking;
 import com.skrt.wigellpadelservice.entities.PadelCourt;
 import com.skrt.wigellpadelservice.exceptions.ResourceNotFoundException;
 import com.skrt.wigellpadelservice.mappers.BookingMapper;
-import com.skrt.wigellpadelservice.repositories.PadelCourtRepository;
+import com.skrt.wigellpadelservice.services.CurrencyService;
 import com.skrt.wigellpadelservice.services.PadelBookingService;
+import com.skrt.wigellpadelservice.services.PadelCourtService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,26 +27,29 @@ import java.util.UUID;
 public class PadelBookingController {
 
     private final PadelBookingService bookingService;
-    private final PadelCourtRepository courtRepository;
+    private final PadelCourtService courtService;
     private final BookingMapper bookingMapper;
+    private final CurrencyService currencyService;
 
     @Autowired
-    public PadelBookingController(PadelBookingService bookingService, PadelCourtRepository courtRepository, BookingMapper bookingMapper) {
+    public PadelBookingController(PadelBookingService bookingService, PadelCourtService courtService, BookingMapper bookingMapper, CurrencyService currencyService) {
         this.bookingService = bookingService;
-        this.courtRepository = courtRepository;
+        this.courtService = courtService;
         this.bookingMapper = bookingMapper;
+        this.currencyService = currencyService;
     }
 
     @GetMapping("/checkavailability/{courtId}/{date}")
     public ResponseEntity<AvailabilityResponse> checkAvailability(@PathVariable UUID courtId, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<LocalTime> free = bookingService.getAvailableSlots(courtId, date);
 
-        PadelCourt court = courtRepository.findById(courtId)
+        PadelCourt court = courtService.getCourtById(courtId)
                 .orElseThrow(()-> new ResourceNotFoundException("court", courtId));
+
         AvailabilityResponse response = new AvailabilityResponse(
                 courtId.toString(),
-                court != null ? court.getName() : null,
-                court != null ? court.getMaxPlayers() : 0,
+                court.getName(),
+                court.getMaxPlayers(),
                 date,
                 free
         );
@@ -61,14 +65,14 @@ public class PadelBookingController {
                 request.time(),
                 request.players()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookingMapper.toResponse(saved));
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingMapper.toResponse(saved, currencyService.toEur(saved.getTotalPriceSek())));
     }
 
     @GetMapping("/v1/mybookings")
     public ResponseEntity<List<BookingResponse>> myBookings(@RequestParam UUID customerId){
         List<BookingResponse> body = bookingService.myBookings(customerId)
                 .stream()
-                .map(bookingMapper::toResponse)
+                .map(b -> bookingMapper.toResponse(b, currencyService.toEur(b.getTotalPriceSek())))
                 .toList();
         return ResponseEntity.ok(body);
     }
@@ -81,7 +85,7 @@ public class PadelBookingController {
                 request.time(),
                 request.players()
         );
-        return ResponseEntity.ok(bookingMapper.toResponse(updated));
+        return ResponseEntity.ok(bookingMapper.toResponse(updated, currencyService.toEur(updated.getTotalPriceSek())));
     }
 
     @DeleteMapping("/v1/cancelbooking")
@@ -94,7 +98,7 @@ public class PadelBookingController {
     public ResponseEntity<List<BookingAdminResponse>> listCanceled(){
         List<BookingAdminResponse> body = bookingService.listCanceled()
                 .stream()
-                .map(bookingMapper::toAdminResponse)
+                .map(b -> bookingMapper.toAdminResponse(b, currencyService.toEur(b.getTotalPriceSek())))
                 .toList();
         return ResponseEntity.ok(body);
     }
@@ -103,7 +107,7 @@ public class PadelBookingController {
     public ResponseEntity<List<BookingAdminResponse>> listUpcoming(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate today){
         List<BookingAdminResponse> body = bookingService.listUpcoming(today)
                 .stream()
-                .map(bookingMapper::toAdminResponse)
+                .map(b -> bookingMapper.toAdminResponse(b, currencyService.toEur(b.getTotalPriceSek())))
                 .toList();
         return ResponseEntity.ok(body);
     }
@@ -112,7 +116,7 @@ public class PadelBookingController {
     public ResponseEntity<List<BookingAdminResponse>> listPast(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate today){
         List<BookingAdminResponse> body = bookingService.listPast(today)
                 .stream()
-                .map(bookingMapper::toAdminResponse)
+                .map(b -> bookingMapper.toAdminResponse(b, currencyService.toEur(b.getTotalPriceSek())))
                 .toList();
         return ResponseEntity.ok(body);
     }
