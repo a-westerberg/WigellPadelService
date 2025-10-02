@@ -1,9 +1,11 @@
 package com.skrt.wigellpadelservice.config;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -12,10 +14,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.ignoringRequestMatchers(PathRequest.toH2Console()))
+                .headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PathRequest.toH2Console()).permitAll()
+
                         .requestMatchers(
-                                "/api/wigellpadel/listcourts",
                                 "/api/wigellpadel/v1/listcanceled",
                                 "/api/wigellpadel/v1/listupcoming",
                                 "/api/wigellpadel/v1/listpast",
@@ -23,7 +27,7 @@ public class SecurityConfig {
                                 "/api/wigellpadel/v1/remcourt/**",
                                 "/api/wigellpadel/v1/updatecourt"
                         ).hasRole("ADMIN")
-                        /* TODO är det rätt att ha sammma endpoint (listcourts) såhär på 2 ställen?   */
+
                         .requestMatchers(
                                 "/api/wigellpadel/listcourts",
                                 "/api/wigellpadel/checkavailability/**",
@@ -31,7 +35,7 @@ public class SecurityConfig {
                                 "/api/wigellpadel/v1/mybookings",
                                 "/api/wigellpadel/v1/updatebooking",
                                 "/api/wigellpadel/v1/cancelbooking"
-                        ).hasRole("USER")
+                        ).hasAnyRole("USER", "ADMIN")
 
                         .anyRequest().authenticated()
                 )

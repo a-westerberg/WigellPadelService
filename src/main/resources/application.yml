@@ -1,28 +1,35 @@
-server:
-  port: 7575
-
 spring:
-  application:
-    name: wigel-padel-service
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-  jpa:
-    properties:
-      hibernate:
-        jdbc.time-zone: Europe/Stockholm
   profiles:
     active: dev
 
-wigell:
-  pricing:
-    base: 300.00
-    extraPerPlayer: 50.00
-    basePlayers: 2
-
-logging:
-  level:
-    root: INFO
-  file:
-    name: logs/wigell-padel-service.log
+#
+#  application:
+#    name: wigel-padel-service
+#  jackson:
+#    serialization:
+#      write-dates-as-timestamps: false
+#  jpa:
+#    properties:
+#      hibernate:
+#        jdbc.time-zone: Europe/Stockholm
+#
+#server:
+#  port: 7575
+#
+#wigell:
+#  pricing:
+#    base: 300.00
+#    extraPerPlayer: 50.00
+#    basePlayers: 2
+#  currency:
+#    apiplugin:
+#      baseUrl: https://v1.apiplugin.io
+#      apiKey: tR3Zmu2G
+#    failOpen: true
+#
+#logging:
+#  level:
+#    root: INFO
+#  file:
+#    name: logs/wigell-padel-service.log
 
