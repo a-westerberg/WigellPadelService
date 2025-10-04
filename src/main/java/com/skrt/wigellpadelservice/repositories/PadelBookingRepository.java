@@ -29,7 +29,7 @@ public interface PadelBookingRepository extends JpaRepository<PadelBooking, UUID
 
     List<PadelBooking> findByCourtIdAndDateAndCanceledFalseOrderByTimeAsc(UUID courtId, LocalDate date);
 
-    List<PadelBooking> findByCustomerIdAndCanceledFalseOrderByDateDesc(UUID customerId);
+    List<PadelBooking> findByCustomerIdAndCanceledFalseOrderByDateDesc(Long customerId);
 
     List<PadelBooking> findByCanceledTrueOrderByCanceledAtDesc();
     List<PadelBooking> findByDateAfterAndCanceledFalseOrderByDateAsc(LocalDate date);

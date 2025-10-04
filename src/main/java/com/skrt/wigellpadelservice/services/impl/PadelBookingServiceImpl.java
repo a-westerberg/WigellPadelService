@@ -3,10 +3,7 @@ package com.skrt.wigellpadelservice.services.impl;
 import com.skrt.wigellpadelservice.entities.PadelBooking;
 import com.skrt.wigellpadelservice.entities.PadelCourt;
 import com.skrt.wigellpadelservice.entities.PadelCustomer;
-import com.skrt.wigellpadelservice.exceptions.BadRequestException;
-import com.skrt.wigellpadelservice.exceptions.CancellationNotAllowedException;
-import com.skrt.wigellpadelservice.exceptions.ResourceNotFoundException;
-import com.skrt.wigellpadelservice.exceptions.SlotUnavailableException;
+import com.skrt.wigellpadelservice.exceptions.*;
 import com.skrt.wigellpadelservice.repositories.PadelBookingRepository;
 import com.skrt.wigellpadelservice.repositories.PadelCourtRepository;
 import com.skrt.wigellpadelservice.repositories.PadelCustomerRepository;
@@ -29,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.skrt.wigellpadelservice.utility.Validate.*;
+import static com.skrt.wigellpadelservice.utility.SecurityUtil.*;
 
 @Service
 @Transactional
@@ -79,23 +77,29 @@ public class PadelBookingServiceImpl implements PadelBookingService {
     }
 
     @Override
-    public PadelBooking bookCourt(UUID customerId, UUID courtId, LocalDate date, LocalTime time, int players) {
-        notNull(customerId, "customerId");
-        notNull(courtId, "courtId");
+    public PadelBooking bookCourt(String courtName, LocalDate date, LocalTime time, int players) {
+        if(courtName == null || courtName.isBlank()){
+            throw new BadRequestException("courtName", "is required");
+        }
+
         notNull(date,  "date");
         notNull(time,  "time");
         positive(players, "players");
 
+        Long customerId = resolveCurrentCustomerId();
+
         PadelCustomer customer = customerRepo.findById(customerId)
                 .orElseThrow(()-> new ResourceNotFoundException("customer", customerId));
-        PadelCourt court = courtRepo.findById(courtId)
-                .orElseThrow(()-> new ResourceNotFoundException("court", courtId));
+
+        PadelCourt court = courtRepo.findByNameIgnoreCase(courtName.trim())
+                .filter(PadelCourt::isActive)
+                .orElseThrow(()-> new ResourceNotFoundException("active court", courtName));
 
         isTrue(players <= court.getMaxPlayers(),
         () ->new BadRequestException("players", "exceeds court max", players));
 
-        isTrue(bookingRepo.isSlotFree(courtId,date,time),
-                () -> new SlotUnavailableException(courtId, date, time));
+        isTrue(bookingRepo.isSlotFree(court.getId(),date,time),
+                () -> new SlotUnavailableException(court.getId(), date, time));
 
         PadelBooking booking = new PadelBooking();
         booking.setCustomer(customer);
@@ -107,16 +111,16 @@ public class PadelBookingServiceImpl implements PadelBookingService {
 
         PadelBooking saved = bookingRepo.save(booking);
 
-        logger.info("user booked {} players to court '{}' on {} {} (bookingId={})",
-        players, court.getName(), date, time, saved.getId());
+        logger.info("user '{}' booked {} players to court '{}' on {} {} (bookingId={})",
+        currentUsername(), players, court.getName(), date, time, saved.getId());
 
         return saved;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<PadelBooking> myBookings(UUID customerId) {
-        notNull(customerId, "customerId");
+    public List<PadelBooking> myBookings() {
+        Long customerId = resolveCurrentCustomerId();
         return bookingRepo.findByCustomerIdAndCanceledFalseOrderByDateDesc(customerId);
     }
 
@@ -129,6 +133,12 @@ public class PadelBookingServiceImpl implements PadelBookingService {
 
         PadelBooking existingBooking = bookingRepo.findByIdAndCanceledFalse(bookingId)
                 .orElseThrow(()-> new ResourceNotFoundException("active booking", bookingId));
+
+        assertOwnerOrAdmin(
+                existingBooking.getCustomer().getId(),
+                resolveCurrentCustomerId(),
+                new ForbiddenOperationException("modify", "booking", bookingId.toString())
+        );
 
         PadelCourt court = existingBooking.getCourt();
 
@@ -150,8 +160,8 @@ public class PadelBookingServiceImpl implements PadelBookingService {
 
         PadelBooking savedBooking = bookingRepo.save(existingBooking);
 
-        logger.info("booking updated: id={}, court='{}', date={}, time={}, players={}",
-                savedBooking.getId(), court.getName(), savedBooking.getDate(), savedBooking.getTime(), savedBooking.getPlayers());
+        logger.info("booking updated by '{}': id={}, court='{}', date={}, time={}, players={}",
+                currentUsername(), savedBooking.getId(), court.getName(), savedBooking.getDate(), savedBooking.getTime(), savedBooking.getPlayers());
 
         return savedBooking;
     }
@@ -163,6 +173,12 @@ public class PadelBookingServiceImpl implements PadelBookingService {
         PadelBooking existing = bookingRepo.findByIdAndCanceledFalse(bookingId)
                 .orElseThrow(()-> new ResourceNotFoundException("active booking", bookingId));
 
+        assertOwnerOrAdmin(
+                existing.getCustomer().getId(),
+                resolveCurrentCustomerId(),
+                new ForbiddenOperationException("cancel", "booking", bookingId.toString())
+        );
+
         LocalDate today = LocalDate.now(ZONE_SE);
         LocalDate limit = existing.getDate().minusDays(7);
 
@@ -173,8 +189,8 @@ public class PadelBookingServiceImpl implements PadelBookingService {
         existing.setCanceled(true);
         bookingRepo.save(existing);
 
-        logger.info("booking canceled: id={}, court='{}', date={}, time={}",
-                existing.getId(), existing.getCourt().getName(), existing.getDate(), existing.getTime());
+        logger.info("booking canceled by '{}': id={}, court='{}', date={}, time={}",
+                currentUsername(), existing.getId(), existing.getCourt().getName(), existing.getDate(), existing.getTime());
 
     }
 
@@ -198,7 +214,15 @@ public class PadelBookingServiceImpl implements PadelBookingService {
         return bookingRepo.findByDateBeforeAndCanceledFalseOrderByDateDesc(today);
     }
 
-
-
+    private Long resolveCurrentCustomerId() {
+        String username = currentUsername();
+        return customerRepo.findByNameIgnoreCase(username)
+                .map(PadelCustomer::getId)
+                .orElseGet(() -> {
+                    PadelCustomer created = new PadelCustomer();
+                    created.setName(username);
+                    return customerRepo.save(created).getId();
+                });
+    }
 
 }

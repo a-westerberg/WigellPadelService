@@ -7,8 +7,6 @@ import com.skrt.wigellpadelservice.repositories.PadelCourtRepository;
 import com.skrt.wigellpadelservice.services.PadelCourtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.skrt.wigellpadelservice.utility.SecurityUtil.*;
 
 @Service
 @Transactional
@@ -45,17 +45,15 @@ public class PadelCourtServiceImpl implements PadelCourtService {
         validateAndNormalize(court);
 
         if(courtRepository.existsByNameIgnoreCase(court.getName())) {
-            logger.warn("attempt to create duplicate court name='{}'",court.getName());
             throw new BadRequestException("name", "already exists", court.getName());
         }
 
         PadelCourt saved = courtRepository.save(court);
 
-        logger.info("court created: id={}, name:'{}', maxPlayers={}",
-                saved.getId(), saved.getName(), saved.getMaxPlayers());
+        logger.info("court created by '{}': id={}, name='{}', maxPlayers={}",
+                currentUsername(), saved.getId(), saved.getName(), saved.getMaxPlayers());
 
         return saved;
-
     }
 
     @Override
@@ -71,8 +69,6 @@ public class PadelCourtServiceImpl implements PadelCourtService {
         courtRepository.findByNameIgnoreCase(court.getName())
                 .filter(other -> !other.getId().equals(court.getId()))
                 .ifPresent(other -> {
-                    logger.warn("attempt to update court id={} to duplicate name ='{}'",
-                            court.getId(), court.getName());
                     throw new BadRequestException("name", "already exists", court.getName());
                 });
 
@@ -80,8 +76,8 @@ public class PadelCourtServiceImpl implements PadelCourtService {
         existingCourt.setMaxPlayers(court.getMaxPlayers());
 
         PadelCourt saved = courtRepository.save(existingCourt);
-        logger.info("court updated: id={}, name='{}', maxPlayers={}",
-                saved.getId(), saved.getName(), saved.getMaxPlayers());
+        logger.info("court updated by '{}': id={}, name='{}', maxPlayers={}",
+               currentUsername(), saved.getId(), saved.getName(), saved.getMaxPlayers());
         return saved;
 
     }
@@ -94,8 +90,8 @@ public class PadelCourtServiceImpl implements PadelCourtService {
         existing.setDeactivatedAt(LocalDateTime.now());
         courtRepository.save(existing);
 
-        logger.info("court removed: id={}, name='{}'",
-                existing.getId(), existing.getName());
+        logger.info("court removed by '{}': id={}, name='{}'",
+                currentUsername(), existing.getId(), existing.getName());
 
     }
 
@@ -129,13 +125,6 @@ public class PadelCourtServiceImpl implements PadelCourtService {
         if(max <= 0) {
             throw new BadRequestException("maxPlayers", "must be greater than 0", max);
         }
-    }
-
-    private static boolean isAdmin(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null
-                && auth.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 
 }
