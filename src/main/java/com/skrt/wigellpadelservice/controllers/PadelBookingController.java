@@ -59,8 +59,7 @@ public class PadelBookingController {
     @PostMapping("/v1/booking/bookcourt")
     public ResponseEntity<BookingResponse> bookCourt(@Valid @RequestBody BookingCreateRequest request){
         PadelBooking saved = bookingService.bookCourt(
-                request.customerId(),
-                request.courtId(),
+                request.courtName(),
                 request.date(),
                 request.time(),
                 request.players()
@@ -69,8 +68,8 @@ public class PadelBookingController {
     }
 
     @GetMapping("/v1/mybookings")
-    public ResponseEntity<List<BookingResponse>> myBookings(@RequestParam UUID customerId){
-        List<BookingResponse> body = bookingService.myBookings(customerId)
+    public ResponseEntity<List<BookingResponse>> myBookings(){
+        List<BookingResponse> body = bookingService.myBookings()
                 .stream()
                 .map(b -> bookingMapper.toResponse(b, currencyService.toEur(b.getTotalPriceSek())))
                 .toList();

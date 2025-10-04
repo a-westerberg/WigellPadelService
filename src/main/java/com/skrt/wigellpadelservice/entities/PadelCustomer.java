@@ -1,35 +1,29 @@
 package com.skrt.wigellpadelservice.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-import java.util.UUID;
-
 @Entity
-@Table(name = "padel_customers", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+@Table(name = "padel_customers", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
 public class PadelCustomer {
 
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Email
-    @NotBlank
-    @Column(nullable = false)
     private String email;
 
     public PadelCustomer() {
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
     public String getName() {

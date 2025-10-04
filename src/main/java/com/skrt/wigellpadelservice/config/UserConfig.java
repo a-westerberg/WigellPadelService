@@ -19,10 +19,10 @@ public class UserConfig {
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder){
         return new InMemoryUserDetailsManager(
-                User.withUsername("simon").password(passwordEncoder.encode("simon")).roles("ADMIN").build(),
                 User.withUsername("alex").password(passwordEncoder.encode("alex")).roles("USER").build(),
                 User.withUsername("sara").password(passwordEncoder.encode("sara")).roles("USER").build(),
-                User.withUsername("amanda").password(passwordEncoder.encode("amanda")).roles("USER").build()
+                User.withUsername("amanda").password(passwordEncoder.encode("amanda")).roles("USER").build(),
+                User.withUsername("simon").password(passwordEncoder.encode("simon")).roles("ADMIN").build()
                 );
     }
 

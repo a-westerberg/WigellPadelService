@@ -6,19 +6,14 @@ import com.skrt.wigellpadelservice.entities.PadelBooking;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Component
 public class BookingMapper {
 
-    public BookingResponse toResponse(PadelBooking booking) {
-        return toResponse(booking,null);
-    }
-
     public BookingResponse toResponse(PadelBooking booking, BigDecimal eur) {
-        String id = toString(booking.getId());
-        String customerId = (booking.getCustomer() != null) ? toString(booking.getCustomer().getId()) : null;
-        String courtId = (booking.getCourt() != null) ? toString(booking.getCourt().getId()) : null;
+        String id = toStringSafe(booking.getId());
+        String customerId = (booking.getCustomer() != null) ? toStringSafe(booking.getCustomer().getId()) : null;
+        String courtId = (booking.getCourt() != null) ? toStringSafe(booking.getCourt().getId()) : null;
         String courtName = (booking.getCourt() != null) ? booking.getCourt().getName() : null;
 
         return new BookingResponse(
@@ -34,14 +29,10 @@ public class BookingMapper {
         );
     }
 
-    public BookingAdminResponse toAdminResponse(PadelBooking booking) {
-        return toAdminResponse(booking, null);
-    }
-
     public BookingAdminResponse toAdminResponse(PadelBooking booking, BigDecimal eur) {
-        String id = toString(booking.getId());
-        String customerId = (booking.getCustomer() != null) ? toString(booking.getCustomer().getId()) : null;
-        String courtId = (booking.getCourt() != null) ? toString(booking.getCourt().getId()) : null;
+        String id = toStringSafe(booking.getId());
+        String customerId = (booking.getCustomer() != null) ? toStringSafe(booking.getCustomer().getId()) : null;
+        String courtId = (booking.getCourt() != null) ? toStringSafe(booking.getCourt().getId()) : null;
         String courtName = (booking.getCourt() != null) ? booking.getCourt().getName() : null;
 
         return new BookingAdminResponse(
@@ -59,7 +50,7 @@ public class BookingMapper {
         );
     }
 
-    private static String toString(UUID id) {
+    private static String toStringSafe(Object id) {
         return id != null ? id.toString() : null;
     }
 }

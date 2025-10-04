@@ -13,9 +13,9 @@ public interface PadelBookingService {
 
     List<LocalTime> getAvailableSlots(UUID courtId, LocalDate date);
 
-    PadelBooking bookCourt(UUID customerId,UUID courtId, LocalDate date, LocalTime time, int players);
+    PadelBooking bookCourt(String courtName, LocalDate date, LocalTime time, int players);
 
-    List<PadelBooking> myBookings(UUID customerId);
+    List<PadelBooking> myBookings();
 
     PadelBooking updateBooking(UUID bookingId, LocalDate newDate, LocalTime newTime, int newPlayers);
 
