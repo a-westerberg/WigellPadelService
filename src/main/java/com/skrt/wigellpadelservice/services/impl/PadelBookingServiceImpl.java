@@ -50,14 +50,14 @@ public class PadelBookingServiceImpl implements PadelBookingService {
         this.pricingService = pricingService;
     }
 
-    @Override
+    /*@Override
     @Transactional(readOnly = true)
     public boolean isSlotFree(UUID courtId, LocalDate date, LocalTime time) {
         notNull(courtId, "courtId");
         notNull(date, "date");
         notNull(time, "time");
         return bookingRepo.isSlotFree(courtId,date,time);
-    }
+    }*/
 
     @Override
     @Transactional(readOnly = true)
@@ -211,7 +211,7 @@ public class PadelBookingServiceImpl implements PadelBookingService {
     @Transactional(readOnly = true)
     public List<PadelBooking> listPast(LocalDate today) {
         if(today == null) today = LocalDate.now(ZONE_SE);
-        return bookingRepo.findByDateBeforeAndCanceledFalseOrderByDateDesc(today);
+        return bookingRepo.findByDateBeforeOrderByDateDesc(today);
     }
 
     private Long resolveCurrentCustomerId() {
