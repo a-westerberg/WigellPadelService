@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface PadelBookingService {
 
-    boolean isSlotFree(UUID courtId, LocalDate date, LocalTime time);
+    /*boolean isSlotFree(UUID courtId, LocalDate date, LocalTime time);*/
 
     List<LocalTime> getAvailableSlots(UUID courtId, LocalDate date);
 

@@ -28,4 +28,5 @@ public class PadelPricingServiceImpl implements PadelPricingService {
         int extra = Math.max(0, players - basePlayers);
         return base.add(extraPerPlayer.multiply(BigDecimal.valueOf(extra)));
     }
+
 }
