@@ -22,12 +22,12 @@ public class CurrencyConversionException extends RuntimeException {
         this.responseBody = null;
     }
 
-    public CurrencyConversionException(String provider, String endpoint,Integer statusCode, String resposeBody, String message) {
-        super("Currency conversion failed via %s %s: %s (status=%s, body=%s)".formatted(provider, endpoint, message, statusCode, resposeBody));
+    public CurrencyConversionException(String provider, String endpoint,Integer statusCode, String responseBody, String message) {
+        super("Currency conversion failed via %s %s: %s (status=%s, body=%s)".formatted(provider, endpoint, message, statusCode, responseBody));
         this.provider = provider;
         this.endpoint = endpoint;
         this.statusCode = statusCode;
-        this.responseBody = resposeBody;
+        this.responseBody = responseBody;
     }
 
     public String getProvider() {
