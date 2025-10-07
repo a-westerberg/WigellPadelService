@@ -50,15 +50,6 @@ public class PadelBookingServiceImpl implements PadelBookingService {
         this.pricingService = pricingService;
     }
 
-    /*@Override
-    @Transactional(readOnly = true)
-    public boolean isSlotFree(UUID courtId, LocalDate date, LocalTime time) {
-        notNull(courtId, "courtId");
-        notNull(date, "date");
-        notNull(time, "time");
-        return bookingRepo.isSlotFree(courtId,date,time);
-    }*/
-
     @Override
     @Transactional(readOnly = true)
     public List<LocalTime> getAvailableSlots(UUID courtId, LocalDate date) {
