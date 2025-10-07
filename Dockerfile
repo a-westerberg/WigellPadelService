@@ -1,0 +1,8 @@
+FROM openjdk:21-jdk-slim
+WORKDIR /app
+COPY target/*.jar app.jar
+
+ENV SPRING_PROFILES_ACTIVE=mysql
+
+EXPOSE 7575
+ENTRYPOINT ["java","-jar","app.jar"]
