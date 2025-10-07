@@ -1,0 +1,38 @@
+server:
+  port: 7575
+
+spring:
+  application:
+    name: wigell-padel-service
+
+  datasource:
+    url: jdbc:mysql://wigell-mysql-service:3306/wigelldb?useSSL=false&allowPublicKeyRetrieval=true&Timezone=UTC
+    username: wigelldbassa
+    password: assa
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc.time_zone: Europe/Stockholm
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      platform: mysql
+
+wigell:
+  pricing:
+    base: 300.00
+    extraPerPlayer: 50.00
+    basePlayers: 2
+  currency:
+    apiplugin:
+      baseUrl: https://v1.apiplugin.io
+      apiKey: ${CURRENCY_API_KEY:tR3Zmu2G}
+    failOpen: true
+logging:
+  file:
+    name: logs/wigell-padel-service.log
