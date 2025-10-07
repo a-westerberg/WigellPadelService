@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: wigel-padel-service
+    name: wigell-padel-service
 
   jackson:
     serialization:
