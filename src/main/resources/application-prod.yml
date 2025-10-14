@@ -1,5 +1,7 @@
 server:
   port: 7575
+  error:
+    include-message: always
 
 spring:
   application:
@@ -18,10 +20,12 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         jdbc.time_zone: Europe/Stockholm
     defer-datasource-initialization: true
+    show-sql: true
   sql:
     init:
       mode: always
       platform: mysql
+
 
 wigell:
   pricing:
